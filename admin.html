@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Mi Biblioteca</title>
+    <style>
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff; min-height: 100vh; padding: 20px;
+        }
+        .container {max-width: 900px; margin: 0 auto;}
+        header {text-align: center; padding: 30px 0; margin-bottom: 30px;}
+        h1 {
+            font-size: 2.5em; font-weight: 700;
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle {color: #b8b8d1; font-size: 1.1em;}
+        
+        .form-section {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.5em; margin-bottom: 20px;
+            color: #f5576c; display: flex; align-items: center; gap: 10px;
+        }
+        
+        .form-group {margin-bottom: 20px;}
+        
+        label {
+            display: block; margin-bottom: 8px; color: #b8b8d1;
+            font-weight: 600; font-size: 0.9em;
+        }
+        
+        input, select {
+            width: 100%; padding: 12px; border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff; font-size: 1em; font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none; border-color: #f5576c;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .btn {
+            padding: 15px 30px; border-radius: 10px; border: none;
+            font-size: 1em; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease; width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(245, 87, 108, 0.5);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5; cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white; margin-top: 10px;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a6f);
+            color: white; padding: 8px 15px; font-size: 0.9em;
+        }
+        
+        .help-text {
+            background: rgba(79, 172, 254, 0.15); border-left: 4px solid #4facfe;
+            border-radius: 10px; padding: 15px; margin-bottom: 20px;
+            font-size: 0.9em; line-height: 1.6;
+        }
+        
+        .loading {
+            text-align: center; padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; margin: 15px 0;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #f5576c;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .movie-preview {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px; padding: 20px; margin: 15px 0;
+            border: 2px solid #4facfe;
+        }
+        
+        .preview-title {font-size: 1.2em; margin-bottom: 10px; color: #4facfe;}
+        .preview-meta {color: #b8b8d1; font-size: 0.9em; line-height: 1.8;}
+        
+        .movie-item {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            border-radius: 15px; padding: 20px; margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        .movie-item-info {flex: 1;}
+        .movie-item-title {font-size: 1.1em; font-weight: 600; margin-bottom: 5px;}
+        .movie-item-meta {color: #b8b8d1; font-size: 0.85em;}
+        
+        .emoji-picker {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .emoji-btn {
+            font-size: 2em; padding: 10px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05); border: 2px solid transparent;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        
+        .emoji-btn:hover {
+            background: rgba(255, 255, 255, 0.1); transform: scale(1.1);
+        }
+        
+        .emoji-btn.selected {
+            border-color: #f5576c; background: rgba(245, 87, 108, 0.2);
+        }
+
+        .error-message {
+            background: rgba(255, 87, 108, 0.2); border: 2px solid #f5576c;
+            border-radius: 10px; padding: 15px; margin: 15px 0;
+            color: #fff;
+        }
+
+        .success-message {
+            background: rgba(79, 254, 142, 0.2); border: 2px solid #4ffe8e;
+            border-radius: 10px; padding: 15px; margin: 15px 0;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Administrador de Películas</h1>
+            <p class="subtitle">Agrega películas pegando el enlace de Google Drive</p>
+        </header>
+
+        <div class="help-text">
+            <strong>📝 Instrucciones:</strong><br>
+            1. Abre el video en Google Drive<br>
+            2. Click derecho → <strong>Compartir</strong> → Selecciona <strong>"Cualquiera con el enlace puede ver"</strong><br>
+            3. Copia el enlace completo y pégalo abajo<br>
+            4. El sistema extraerá automáticamente: Nombre, Tamaño y ID
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-title">➕ Agregar Nueva Película</h2>
+            
+            <div class="form-group">
+                <label>Enlace de Google Drive *</label>
+                <input type="text" id="driveUrl" placeholder="https://drive.google.com/file/d/1AbCdEf...">
+            </div>
+            
+            <div class="form-group">
+                <label>Emoji / Ícono</label>
+                <div class="emoji-picker">
+                    <button class="emoji-btn selected" onclick="selectEmoji('🎬')">🎬</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🎭')">🎭</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🎥')">🎥</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🍿')">🍿</button>
+                    <button class="emoji-btn" onclick="selectEmoji('⚡')">⚡</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🔥')">🔥</button>
+                    <button class="emoji-btn" onclick="selectEmoji('💎')">💎</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🌟')">🌟</button>
+                    <button class="emoji-btn" onclick="selectEmoji('👑')">👑</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🚀')">🚀</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🎪')">🎪</button>
+                    <button class="emoji-btn" onclick="selectEmoji('🎯')">🎯</button>
+                </div>
+            </div>
+
+            <div id="loadingSection" style="display: none;" class="loading">
+                <div class="spinner"></div>
+                <p>Obteniendo información del archivo...</p>
+            </div>
+
+            <div id="previewSection" style="display: none;"></div>
+            
+            <button class="btn btn-primary" id="addBtn" onclick="processMovie()">🔍 Obtener Información</button>
+            <button class="btn btn-secondary" onclick="window.open('index.html', '_blank')">🎬 Ver Mi Biblioteca</button>
+        </div>
+
+        <div class="form-section">
+            <h2 class="section-title">📚 Mis Películas (<span id="movieCount">0</span>)</h2>
+            <div id="moviesList"></div>
+        </div>
+    </div>
+
+    <script>
+        let movies = [];
+        let selectedEmoji = '🎬';
+        let currentMovieData = null;
+
+        // Cargar películas desde storage
+        async function loadMovies() {
+            try {
+                const result = await window.storage.list('movie:');
+                if (result && result.keys) {
+                    movies = [];
+                    for (const key of result.keys) {
+                        const data = await window.storage.get(key);
+                        if (data && data.value) {
+                            movies.push(JSON.parse(data.value));
+                        }
+                    }
+                    updateMoviesList();
+                }
+            } catch (error) {
+                console.log('No hay películas guardadas aún');
+            }
+        }
+
+        // Seleccionar emoji
+        function selectEmoji(emoji) {
+            selectedEmoji = emoji;
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        // Extraer ID de la URL
+        function extractDriveId(url) {
+            const patterns = [
+                /\/file\/d\/([a-zA-Z0-9_-]+)/,
+                /id=([a-zA-Z0-9_-]+)/,
+                /^([a-zA-Z0-9_-]+)$/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match) return match[1];
+            }
+            return null;
+        }
+
+        // Formatear tamaño
+        function formatSize(bytes) {
+            if (!bytes) return '0 MB';
+            const gb = bytes / (1024 * 1024 * 1024);
+            const mb = bytes / (1024 * 1024);
+            
+            if (gb >= 1) {
+                return `${gb.toFixed(2)} GB`;
+            } else {
+                return `${mb.toFixed(2)} MB`;
+            }
+        }
+
+        // Procesar película (obtener info de Drive)
+        async function processMovie() {
+            const url = document.getElementById('driveUrl').value.trim();
+            
+            if (!url) {
+                showError('Por favor pega el enlace de Google Drive');
+                return;
+            }
+
+            const driveId = extractDriveId(url);
+            if (!driveId) {
+                showError('No se pudo extraer el ID. Asegúrate de pegar el enlace completo de Google Drive');
+                return;
+            }
+
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('previewSection').style.display = 'none';
+            document.getElementById('addBtn').disabled = true;
+
+            try {
+                // Usar la API de Google Drive para obtener metadata
+                const response = await fetch(`https://www.googleapis.com/drive/v3/files/${driveId}?fields=name,size,mimeType&key=AIzaSyDummyKeyForDemo`);
+                
+                if (!response.ok) {
+                    // Si la API no funciona, extraer del HTML
+                    await fetchFromDrivePage(driveId);
+                } else {
+                    const data = await response.json();
+                    displayMoviePreview(driveId, data.name, parseInt(data.size));
+                }
+            } catch (error) {
+                // Plan B: Extraer del HTML de Drive
+                await fetchFromDrivePage(driveId);
+            }
+        }
+
+        // Plan B: Extraer info del HTML de Drive
+        async function fetchFromDrivePage(driveId) {
+            try {
+                const response = await fetch(`https://drive.google.com/file/d/${driveId}/view`);
+                const html = await response.text();
+                
+                // Extraer nombre del archivo del HTML
+                let filename = 'Película sin título';
+                const titleMatch = html.match(/<title>(.*?)<\/title>/);
+                if (titleMatch) {
+                    filename = titleMatch[1].replace(' - Google Drive', '').trim();
+                }
+
+                // Extraer tamaño (esto es más complejo en Drive)
+                let size = 0;
+                const sizeMatch = html.match(/(\d+(?:\.\d+)?)\s*(GB|MB|KB)/i);
+                if (sizeMatch) {
+                    const num = parseFloat(sizeMatch[1]);
+                    const unit = sizeMatch[2].toUpperCase();
+                    if (unit === 'GB') size = num * 1024 * 1024 * 1024;
+                    else if (unit === 'MB') size = num * 1024 * 1024;
+                    else if (unit === 'KB') size = num * 1024;
+                }
+
+                displayMoviePreview(driveId, filename, size);
+            } catch (error) {
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('addBtn').disabled = false;
+                showError('No se pudo obtener la información. Verifica que:\n1. El enlace es correcto\n2. El archivo está compartido como "Cualquiera con el enlace"');
+            }
+        }
+
+        // Mostrar vista previa de la película
+        function displayMoviePreview(driveId, name, size) {
+            document.getElementById('loadingSection').style.display = 'none';
+            
+            currentMovieData = {
+                id: Date.now(),
+                driveId: driveId,
+                title: name,
+                size: formatSize(size),
+                sizeBytes: size,
+                emoji: selectedEmoji
+            };
+
+            const preview = document.getElementById('previewSection');
+            preview.style.display = 'block';
+            preview.innerHTML = `
+                <div class="movie-preview">
+                    <div class="preview-title">✅ Información Obtenida</div>
+                    <div class="preview-meta">
+                        <strong>Título:</strong> ${currentMovieData.title}<br>
+                        <strong>Tamaño:</strong> ${currentMovieData.size}<br>
+                        <strong>ID:</strong> ${driveId}<br>
+                        <strong>Emoji:</strong> ${selectedEmoji}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('addBtn').textContent = '✨ Agregar a Mi Biblioteca';
+            document.getElementById('addBtn').disabled = false;
+            document.getElementById('addBtn').onclick = saveMovie;
+        }
+
+        // Guardar película
+        async function saveMovie() {
+            if (!currentMovieData) return;
+
+            try {
+                await window.storage.set(`movie:${currentMovieData.id}`, JSON.stringify(currentMovieData));
+                movies.push(currentMovieData);
+                
+                showSuccess('¡Película agregada exitosamente! La biblioteca se actualizará automáticamente.');
+                
+                // Limpiar formulario
+                document.getElementById('driveUrl').value = '';
+                document.getElementById('previewSection').style.display = 'none';
+                document.getElementById('addBtn').textContent = '🔍 Obtener Información';
+                document.getElementById('addBtn').onclick = processMovie;
+                currentMovieData = null;
+                
+                updateMoviesList();
+                
+                // Notificar al index.html que se actualizó la lista
+                broadcastUpdate();
+            } catch (error) {
+                showError('Error al guardar: ' + error.message);
+            }
+        }
+
+        // Eliminar película
+        async function deleteMovie(id) {
+            if (!confirm('¿Estás seguro de eliminar esta película?')) return;
+
+            try {
+                await window.storage.delete(`movie:${id}`);
+                movies = movies.filter(m => m.id !== id);
+                updateMoviesList();
+                broadcastUpdate();
+                showSuccess('Película eliminada');
+            } catch (error) {
+                showError('Error al eliminar: ' + error.message);
+            }
+        }
+
+        // Actualizar lista de películas
+        function updateMoviesList() {
+            const list = document.getElementById('moviesList');
+            document.getElementById('movieCount').textContent = movies.length;
+
+            if (movies.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #b8b8d1; padding: 20px;">No hay películas agregadas todavía</p>';
+                return;
+            }
+
+            list.innerHTML = movies.map(movie => `
+                <div class="movie-item">
+                    <div style="font-size: 2em; margin-right: 15px;">${movie.emoji}</div>
+                    <div class="movie-item-info">
+                        <div class="movie-item-title">${movie.title}</div>
+                        <div class="movie-item-meta">💾 ${movie.size}</div>
+                    </div>
+                    <button class="btn-danger" onclick="deleteMovie(${movie.id})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        // Notificar cambios
+        function broadcastUpdate() {
+            localStorage.setItem('moviesUpdated', Date.now());
+        }
+
+        // Mensajes
+        function showError(message) {
+            const preview = document.getElementById('previewSection');
+            preview.style.display = 'block';
+            preview.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+        }
+
+        function showSuccess(message) {
+            const preview = document.getElementById('previewSection');
+            preview.style.display = 'block';
+            preview.innerHTML = `<div class="success-message">✅ ${message}</div>`;
+            setTimeout(() => {
+                preview.style.display = 'none';
+            }, 3000);
+        }
+
+        // Cargar al iniciar
+        loadMovies();
+    </script>
+</body>
+</html>
