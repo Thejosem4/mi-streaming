@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Biblioteca - 2 Películas</title>
+    <title>Mi Biblioteca de Películas</title>
     <style>
         * {margin: 0; padding: 0; box-sizing: border-box;}
         body {
@@ -12,7 +12,7 @@
             color: #fff; min-height: 100vh; padding: 20px;
         }
         .container {max-width: 1400px; margin: 0 auto;}
-        header {text-align: center; padding: 40px 0; margin-bottom: 40px;}
+        header {text-align: center; padding: 40px 0; margin-bottom: 40px; position: relative;}
         h1 {
             font-size: 3em; font-weight: 700;
             background: linear-gradient(45deg, #f093fb, #f5576c);
@@ -20,6 +20,18 @@
             margin-bottom: 10px;
         }
         .subtitle {color: #b8b8d1; font-size: 1.2em;}
+        .admin-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white; border: none; padding: 12px 25px;
+            border-radius: 10px; font-weight: 600; cursor: pointer;
+            text-decoration: none; display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.5);
+        }
         .stats {display: flex; justify-content: center; gap: 30px; margin-top: 20px; flex-wrap: wrap;}
         .stat-item {
             background: rgba(255, 255, 255, 0.05); padding: 15px 30px;
@@ -75,116 +87,161 @@
             background: linear-gradient(45deg, #f093fb, #f5576c);
             border: none; border-radius: 10px; color: white;
             font-size: 1em; font-weight: 600; cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s ease; text-decoration: none;
+            display: block; text-align: center;
         }
         .play-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 10px 30px rgba(245, 87, 108, 0.5);
         }
-        .video-player {
-            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.95); z-index: 1000; padding: 20px;
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px; backdrop-filter: blur(10px);
         }
-        .video-player.active {
-            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        .empty-state h2 {font-size: 2em; margin-bottom: 15px; color: #f5576c;}
+        .empty-state p {color: #b8b8d1; font-size: 1.1em; margin-bottom: 25px;}
+        .loading {
+            text-align: center; padding: 40px;
+            font-size: 1.2em; color: #b8b8d1;
         }
-        .video-container {width: 100%; max-width: 1200px; position: relative;}
-        .video-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px; padding: 0 10px;
-        }
-        .video-title {font-size: 1.5em; color: #fff;}
-        .close-btn {
-            background: #f5576c; border: none; color: white;
-            font-size: 2em; width: 50px; height: 50px; border-radius: 50%;
-            cursor: pointer; transition: all 0.3s ease;
-        }
-        .close-btn:hover {background: #ff2d55; transform: rotate(90deg);}
-        video {width: 100%; border-radius: 10px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);}
         @media (max-width: 768px) {
             h1 {font-size: 2em;}
             .movies-grid {grid-template-columns: 1fr;}
+            .admin-btn {position: static; margin-top: 15px;}
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
+            <a href="admin.html" class="admin-btn">⚙️ Administrar</a>
             <h1>🎬 Mi Biblioteca Personal</h1>
             <p class="subtitle">Tus películas, siempre disponibles</p>
             <div class="stats">
                 <div class="stat-item">
-                    <div class="stat-number">2</div>
+                    <div class="stat-number" id="movieCount">0</div>
                     <div>Películas</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">3.9</div>
+                    <div class="stat-number" id="totalSize">0</div>
                     <div>GB Total</div>
                 </div>
             </div>
         </header>
-        <div class="movies-grid">
 
-            <div class="movie-card">
-                <div class="movie-poster">🎬<div class="movie-number">#1</div></div>
-                <div class="movie-info">
-                    <div class="movie-title">Baahubali+(2015)</div>
-                    <div class="movie-meta">💾 1255.02 MB</div>
-                    <button class="play-btn" onclick="playVideo('Baahubali+(2015).mp4', 'Baahubali+(2015)')">▶ Reproducir</button>
-                </div>
-            </div>
-
-            <div class="movie-card">
-                <div class="movie-poster">🎭<div class="movie-number">#2</div></div>
-                <div class="movie-info">
-                    <div class="movie-title">Bahubali+2+The+Conclusion+(Baahubali+2+The+Conclusion)+(2017)</div>
-                    <div class="movie-meta">💾 2784.04 MB</div>
-                    <button class="play-btn" onclick="playVideo('Bahubali+2+The+Conclusion+(Baahubali+2+The+Conclusion)+(2017).mp4', 'Bahubali+2+The+Conclusion+(Baahubali+2+The+Conclusion)+(2017)')">▶ Reproducir</button>
-                </div>
-            </div>
-
+        <div id="loadingState" class="loading">
+            ⏳ Cargando biblioteca...
         </div>
-    </div>
-    <div class="video-player" id="videoPlayer">
-        <div class="video-container">
-            <div class="video-header">
-                <div class="video-title" id="currentVideoTitle"></div>
-                <button class="close-btn" onclick="closeVideo()">×</button>
-            </div>
-            <video id="mainVideo" controls>
-                <source id="videoSource" src="" type="video/mp4">
-            </video>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h2>📭 Tu biblioteca está vacía</h2>
+            <p>Comienza agregando películas desde el administrador</p>
+            <a href="admin.html" class="play-btn" style="max-width: 300px; margin: 0 auto;">
+                ➕ Agregar Primera Película
+            </a>
         </div>
+
+        <div class="movies-grid" id="moviesGrid"></div>
     </div>
+
     <script>
-        const driveIds = {};
-        
-        function playVideo(filename, title) {
-            const driveId = driveIds[filename];
-            if (!driveId) {
-                alert('❌ Video no disponible. ID no configurado.');
-                return;
+        let movies = [];
+
+        // Cargar películas desde storage
+        async function loadMovies() {
+            try {
+                const result = await window.storage.list('movie:');
+                movies = [];
+                
+                if (result && result.keys && result.keys.length > 0) {
+                    for (const key of result.keys) {
+                        const data = await window.storage.get(key);
+                        if (data && data.value) {
+                            movies.push(JSON.parse(data.value));
+                        }
+                    }
+                    
+                    // Ordenar por ID (más recientes primero)
+                    movies.sort((a, b) => b.id - a.id);
+                    
+                    displayMovies();
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error cargando películas:', error);
+                showEmptyState();
             }
+        }
+
+        // Mostrar películas
+        function displayMovies() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'none';
             
-            const streamUrl = `https://drive.google.com/uc?export=download&id=${driveId}`;
-            document.getElementById('currentVideoTitle').textContent = title;
-            const player = document.getElementById('videoPlayer');
-            const video = document.getElementById('mainVideo');
-            const source = document.getElementById('videoSource');
-            source.src = streamUrl;
-            video.load();
-            player.classList.add('active');
-            video.play();
+            const grid = document.getElementById('moviesGrid');
+            
+            grid.innerHTML = movies.map((movie, index) => `
+                <div class="movie-card" onclick="openMovie('${movie.driveId}')">
+                    <div class="movie-poster">${movie.emoji}<div class="movie-number">#${index + 1}</div></div>
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        <div class="movie-meta">💾 ${movie.size}</div>
+                        <a href="https://drive.google.com/file/d/${movie.driveId}/view" 
+                           target="_blank" 
+                           class="play-btn" 
+                           onclick="event.stopPropagation()">▶ Ver Película</a>
+                    </div>
+                </div>
+            `).join('');
+
+            updateStats();
         }
-        
-        function closeVideo() {
-            document.getElementById('videoPlayer').classList.remove('active');
-            document.getElementById('mainVideo').pause();
+
+        // Mostrar estado vacío
+        function showEmptyState() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('movieCount').textContent = '0';
+            document.getElementById('totalSize').textContent = '0';
         }
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeVideo();
+
+        // Actualizar estadísticas
+        function updateStats() {
+            document.getElementById('movieCount').textContent = movies.length;
+            
+            // Calcular tamaño total
+            const totalGB = movies.reduce((acc, movie) => {
+                if (!movie.sizeBytes) return acc;
+                return acc + (movie.sizeBytes / (1024 * 1024 * 1024));
+            }, 0);
+            
+            document.getElementById('totalSize').textContent = totalGB.toFixed(1);
+        }
+
+        // Abrir película
+        function openMovie(driveId) {
+            window.open(`https://drive.google.com/file/d/${driveId}/view`, '_blank');
+        }
+
+        // Escuchar cambios desde el admin
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'moviesUpdated') {
+                loadMovies();
+            }
         });
+
+        // Recargar si hay cambios (para cuando admin y biblioteca están abiertos)
+        setInterval(async () => {
+            const result = await window.storage.list('movie:');
+            if (result && result.keys && result.keys.length !== movies.length) {
+                loadMovies();
+            }
+        }, 3000);
+
+        // Cargar al iniciar
+        loadMovies();
     </script>
 </body>
 </html>
